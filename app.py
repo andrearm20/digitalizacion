@@ -54,20 +54,20 @@ if st.button("Cargar y analizar datos"):
     st.dataframe(outliers)
     
 def get_humidity_data():
-    query = '''
+    query2 = '''
     from(bucket: "homeiot")
       |> range(start: -24h)
       |> filter(fn: (r) => r._measurement == "airSensor")
       |> filter(fn: (r) => r._field == "humidity")
     '''
-    client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=ORG)
+    client2 = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=ORG)
     df2 = client.query_api().query_data_frame(org=ORG, query=query)
     df2 = df[["_time", "_value"]].rename(columns={"_time": "timestamp", "_value": "humedad"})
     df2["timestamp"] = pd.to_datetime(df["timestamp"])
     return df
 # --- Detección de anomalías con Isolation Forest ---
 def detectar_anomalias(df):
-    model = IsolationForest(contamination=0.1, random_state=40)
+    model2 = IsolationForest(contamination=0.1, random_state=40)
     df2["anomaly"] = model.fit_predict(df[["humedad"]])
     return df
 
@@ -82,7 +82,7 @@ if st.button("Cargar y analizar datos"):
     st.write(df["humedad"].describe())
 
     df2 = detectar_anomalias(df)
-    outliers = df[df["anomaly"] == -1]
+    outliers2 = df[df["anomaly"] == -1]
 
     st.subheader("Visualización con anomalías:")
     fig, ax = plt.subplots()
