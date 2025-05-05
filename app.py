@@ -24,7 +24,7 @@ def get_temperature_data():
     return df
 
 # --- Detección de anomalías con Isolation Forest ---
-def detectar_anomalias(df):
+def detectar_anomalias_temp(df):
     model = IsolationForest(contamination=0.05, random_state=42)
     df["anomaly"] = model.fit_predict(df[["temperatura"]])
     return df
@@ -40,7 +40,7 @@ if st.button("Cargar y analizar datos"):
     st.subheader("Estadísticas descriptivas:")
     st.write(df["temperatura"].describe())
 
-    df = detectar_anomalias(df)
+    df = detectar_anomalias_temp(df)
     outliers = df[df["anomaly"] == -1]
 
     st.subheader("Visualización con anomalías:")
@@ -53,7 +53,7 @@ if st.button("Cargar y analizar datos"):
     st.subheader("Anomalías detectadas:")
     st.dataframe(outliers)
     
-def get_temperature_data():
+def get_humidity_data():
     query = '''
     from(bucket: "homeiot")
       |> range(start: -24h)
@@ -62,11 +62,12 @@ def get_temperature_data():
     '''
     client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=ORG)
     df = client.query_api().query_data_frame(org=ORG, query=query)
-    df = df[["_time", "_value"]].rename(columns={"_time": "timestamp", "_value": "humidity"})
+    df = df[["_time", "_value"]].rename(columns={"_time": "timestamp", "_value": "humedad"})
     df["timestamp"] = pd.to_datetime(df["timestamp"])
     return df
+    
 # --- Detección de anomalías con Isolation Forest ---
-def detectar_anomalias(df):
+def detectar_anomalias_hum(df):
     model = IsolationForest(contamination=0.05, random_state=42)
     df["anomaly"] = model.fit_predict(df[["humidity"]])
     return df
@@ -74,14 +75,14 @@ def detectar_anomalias(df):
 # --- Streamlit UI ---
 st.title("Análisis de humidity con IA local")
 if st.button("Cargar y analizar datos"):
-    df = get_temperature_data()
+    df = get_humidity_data()
     st.subheader("Datos crudos:")
     st.dataframe(df)
 
     st.subheader("Estadísticas descriptivas:")
     st.write(df["humidity"].describe())
 
-    df = detectar_anomalias(df)
+    df = detectar_anomalias_hum(df)
     outliers = df[df["anomaly"] == -1]
 
     st.subheader("Visualización con anomalías:")
