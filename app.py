@@ -85,11 +85,11 @@ if st.button("Cargar y analizar datos"):
     outliers2 = df2[df2["anomaly"] == -1]
 
     st.subheader("Visualización con anomalías:")
-    fig, ax = plt.subplots()
+    fig2, ax = plt.subplots()
     sns.lineplot(x="timestamp", y="humedad", data=df, label="humedad", ax=ax)
     ax.scatter(outliers["timestamp"], outliers["humedad"], color="red", label="Anomalía", zorder=5)
     ax.legend()
-    st.pyplot(fig)
+    st.pyplot(fig2)
 
     st.subheader("Anomalías detectadas:")
     st.dataframe(outliers)
