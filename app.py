@@ -61,28 +61,28 @@ def get_humidity_data():
       |> filter(fn: (r) => r._field == "humidity")
     '''
     client2 = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=ORG)
-    df2 = client.query_api().query_data_frame(org=ORG, query=query)
-    df2 = df[["_time", "_value"]].rename(columns={"_time": "timestamp", "_value": "humedad"})
+    df2 = client.query_api().query_data_frame(org=ORG, query2=query2)
+    df2 = df2[["_time", "_value"]].rename(columns={"_time": "timestamp", "_value": "humedad"})
     df2["timestamp"] = pd.to_datetime(df["timestamp"])
-    return df
+    return df2
 # --- Detección de anomalías con Isolation Forest ---
-def detectar_anomalias(df):
+def detectar_anomalias(df2):
     model2 = IsolationForest(contamination=0.1, random_state=40)
-    df2["anomaly"] = model.fit_predict(df[["humedad"]])
-    return df
+    df2["anomaly"] = model2.fit_predict(df2[["humedad"]])
+    return df2
 
 # --- Streamlit UI ---
 st.title("Análisis de humedad con IA local")
 if st.button("Cargar y analizar datos"):
     df2 = get_humidity_data()
     st.subheader("Datos crudos:")
-    st.dataframe(df)
+    st.dataframe(df2)
 
     st.subheader("Estadísticas descriptivas:")
-    st.write(df["humedad"].describe())
+    st.write(df2["humedad"].describe())
 
-    df2 = detectar_anomalias(df)
-    outliers2 = df[df["anomaly"] == -1]
+    df2 = detectar_anomalias(df2)
+    outliers2 = df2[df2["anomaly"] == -1]
 
     st.subheader("Visualización con anomalías:")
     fig, ax = plt.subplots()
