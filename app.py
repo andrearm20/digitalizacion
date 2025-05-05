@@ -10,7 +10,7 @@ import seaborn as sns
 from config import INFLUX_URL, INFLUX_TOKEN, ORG, BUCKET
 
 # --- Cargar datos desde InfluxDB ---
-def get_temperature_data():
+def get_humidity_data():
     query = '''
     from(bucket: "homeiot")
       |> range(start: -24h)
@@ -33,7 +33,7 @@ def detectar_anomalias(df):
 st.title("Análisis de humedad con IA local")
 
 if st.button("Cargar y analizar datos"):
-    df = get_temperature_data()
+    df = get_humidity_data()
     st.subheader("Datos crudos:")
     st.dataframe(df)
 
@@ -59,18 +59,18 @@ def get_temperature_data():
     from(bucket: "homeiot")
       |> range(start: -24h)
       |> filter(fn: (r) => r._measurement == "airSensor")
-      |> filter(fn: (r) => r._field == "humidity")
+      |> filter(fn: (r) => r._field == "temperature")
     '''
     client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=ORG)
     df = client.query_api().query_data_frame(org=ORG, query=query)
-    df = df[["_time", "_value"]].rename(columns={"_time": "timestamp", "_value": "humidity"})
+    df = df[["_time", "_value"]].rename(columns={"_time": "timestamp", "_value": "temperature"})
     df["timestamp"] = pd.to_datetime(df["timestamp"])
     return df
 
 # --- Detección de anomalías con Isolation Forest ---
 def detectar_anomalias(df):
     model = IsolationForest(contamination=0.05, random_state=42)
-    df["anomaly"] = model.fit_predict(df[["humidity"]])
+    df["anomaly"] = model.fit_predict(df[["temperature"]])
     return df
 
 # --- Streamlit UI ---
@@ -82,15 +82,15 @@ if st.button("Cargar y analizar datos"):
     st.dataframe(df)
 
     st.subheader("Estadísticas descriptivas:")
-    st.write(df["humidity"].describe())
+    st.write(df["temperature"].describe())
 
     df = detectar_anomalias(df)
     outliers = df[df["anomaly"] == -1]
 
     st.subheader("Visualización con anomalías:")
     fig, ax = plt.subplots()
-    sns.lineplot(x="timestamp", y="humidity", data=df, label="humidity", ax=ax)
-    ax.scatter(outliers["timestamp"], outliers["humidity"], color="red", label="Anomalía", zorder=5)
+    sns.lineplot(x="timestamp", y="temperature", data=df, label="temperature", ax=ax)
+    ax.scatter(outliers["timestamp"], outliers["temperature"], color="red", label="Anomalía", zorder=5)
     ax.legend()
     st.pyplot(fig)
 
