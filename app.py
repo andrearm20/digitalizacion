@@ -53,7 +53,7 @@ if st.button("Cargar y analizar datos"):
     st.subheader("Anomalías detectadas:")
     st.dataframe(outliers)
     
-def get_humidity_data():
+def get_temperature_data():
     query2 = '''
     from(bucket: "homeiot")
       |> range(start: -24h)
@@ -74,7 +74,7 @@ def detectar_anomalias(df2):
 # --- Streamlit UI ---
 st.title("Análisis de humedad con IA local")
 if st.button("Cargar y analizar datos"):
-    df2 = get_humidity_data()
+    df2 = get_temperature_data()
     st.subheader("Datos crudos:")
     st.dataframe(df2)
 
