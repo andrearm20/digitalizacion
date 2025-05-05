@@ -76,7 +76,7 @@ def detectar_anomalias(df):
 # --- Streamlit UI ---
 st.title("Análisis de humedad con IA local")
 
-if st.button("Cargar y analizar datos"):
+if st.button("Cargar y analizar datos temperatura"):
     df = get_temperature_data()
     st.subheader("Datos crudos:")
     st.dataframe(df)
